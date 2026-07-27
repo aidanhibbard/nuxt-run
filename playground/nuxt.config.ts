@@ -1,6 +1,7 @@
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
-  modules: ['my-module'],
+  modules: ['../module'],
   devtools: { enabled: true },
   compatibilityDate: 'latest',
-  myModule: {},
 })
