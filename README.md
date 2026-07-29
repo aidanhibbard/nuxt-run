@@ -69,18 +69,18 @@ try {
 }
 ```
 
-Build, then run the emitted entry:
-
-```bash
-nuxt build
-node .output/server/run/seed/index.mjs
-```
-
 In dev:
 
 ```bash
 nuxt dev
 node .nuxt/dev/run/seed/index.mjs
+```
+
+Post build:
+
+```bash
+nuxt build
+node .output/server/run/seed/index.mjs
 ```
 
 Scripts share Nitro's module graph, so `useRuntimeConfig()` and `server/utils` work.
