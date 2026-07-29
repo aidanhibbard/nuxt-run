@@ -51,7 +51,7 @@ Add a script under `server/run/<name>/index.ts`:
 ```ts
 // server/run/seed/index.ts
 const {
-  db: {
+  database: {
     url,
   },
 } = useRuntimeConfig()
