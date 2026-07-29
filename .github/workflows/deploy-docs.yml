@@ -1,11 +1,10 @@
-# Sample workflow for building and deploying a VitePress site to GitHub Pages
-#
+# Build and deploy the VitePress site to GitHub Pages on release tags.
 name: Deploy VitePress site to Pages
 
 on:
   push:
-    branches: [main]
-
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
