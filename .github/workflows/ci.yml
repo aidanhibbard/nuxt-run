@@ -40,8 +40,28 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Playground prepare
+      - name: Unit tests with 100% coverage thresholds
+        run: npm run test:coverage
+
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare module + playground
         run: npm run dev:prepare
 
-      - name: Test
-        run: npm run test
+      - name: Build playground
+        run: npm run dev:build
+
+      - name: Smoke — run scripts + listen regression
+        run: npm run test:smoke

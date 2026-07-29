@@ -1,10 +1,9 @@
 import { defineNuxtModule, createResolver } from '@nuxt/kit'
 import { name, version, configKey, compatibility } from '../package.json'
-import type { NitroConfig } from 'nitropack'
-import type { Plugin } from 'rollup'
-import { scanRunScripts } from './utils/scan-run-scripts'
-import { assertNoDuplicateRunNames, DuplicateRunNameError } from './utils/validate-names'
-import { logger } from './utils/logger'
+import type { Nitro, NitroConfig } from 'nitropack'
+import { createRunRollupPlugin } from './utils/create-run-rollup-plugin'
+import { applyNitroRunConfig } from './utils/apply-nitro-run-config'
+import { isolateServerEntryChunks } from './utils/isolate-server-entry-chunks'
 
 export interface ModuleOptions {
   /**
@@ -33,72 +32,27 @@ export default defineNuxtModule<ModuleOptions>({
   async setup(options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
 
-    const runDir = resolve(nuxt.options.rootDir, options.runDir ?? 'server/run')
+    const runDirOption = options.runDir ?? 'server/run'
+    const runDir = resolve(nuxt.options.rootDir, runDirOption)
 
-    const rollupPlugin: Plugin = {
-      name: 'nuxt-run-build',
-      async buildStart() {
-        const scripts = await scanRunScripts({
-          runDir,
-          pattern: options.runPattern,
-        })
-
-        if (scripts.length === 0) {
-          logger.info('No run scripts found')
-          return
-        }
-
-        try {
-          assertNoDuplicateRunNames(scripts, nuxt.options.rootDir)
-        }
-        catch (error) {
-          if (error instanceof DuplicateRunNameError) {
-            this.error(error.message)
-            return
-          }
-          throw error
-        }
-
-        for (const script of scripts) {
-          this.addWatchFile(script.srcPath)
-          // Emit the script itself as the entry — no wrapper, no lifecycle opinions.
-          this.emitFile({
-            type: 'chunk',
-            id: script.srcPath,
-            fileName: `run/${script.name}/index.mjs`,
-          })
-        }
-
-        logger.success(`Registered ${scripts.length} run script(s): ${scripts.map(s => s.name).join(', ')}`)
-      },
-    }
+    const rollupPlugin = createRunRollupPlugin({
+      runDir,
+      runPattern: options.runPattern,
+      rootDir: nuxt.options.rootDir,
+    })
 
     nuxt.hook('nitro:config', (nitroConfig: NitroConfig) => {
-      // nitro-dev defaults to inlineDynamicImports: true, which merges emitFile
-      // chunks into the server entry and runs top-level script side effects on
-      // startup. Keep chunks separate so scripts only run when executed directly.
-      nitroConfig.inlineDynamicImports = false
+      applyNitroRunConfig(nitroConfig, {
+        plugin: rollupPlugin,
+        runDirOption,
+      })
+    })
 
-      // Keep run scripts out of Nitro's server directory scan (routes/api/plugins/…).
-      // Patterns are relative to the server directory.
-      const runDirOption = options.runDir ?? 'server/run'
-      const serverRelative = runDirOption.replace(/^[\\/]?server[\\/]/, '')
-      if (serverRelative && serverRelative !== runDirOption) {
-        nitroConfig.ignore = nitroConfig.ignore ?? []
-        nitroConfig.ignore.push(`${serverRelative}/**`)
-      }
-
-      nitroConfig.rollupConfig = nitroConfig.rollupConfig ?? {}
-      const current = nitroConfig.rollupConfig.plugins
-      if (Array.isArray(current)) {
-        nitroConfig.rollupConfig.plugins = [...current, rollupPlugin]
-      }
-      else if (current) {
-        nitroConfig.rollupConfig.plugins = [current, rollupPlugin]
-      }
-      else {
-        nitroConfig.rollupConfig.plugins = [rollupPlugin]
-      }
+    // rollup:before runs after Nitro installs its own manualChunks — wrap it there.
+    nuxt.hook('nitro:init', (nitro: Nitro) => {
+      nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
+        isolateServerEntryChunks(rollupConfig)
+      })
     })
   },
 })

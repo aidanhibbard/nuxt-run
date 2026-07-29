@@ -1,89 +1,83 @@
 # nuxt-run
 
+> Tasks done right.
+
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-A Nuxt module that bundles standalone **run scripts** under `server/run/` into
-self-contained `.mjs` entries during the Nuxt/Nitro build. Each script becomes
-its own executable file you can run independently after `nuxt build` — one
-runnable, one entry.
+## Sponsored by
 
-This is the simpler sibling of [nuxt-processor](https://github.com/aidanhibbard/nuxt-processor),
-which collapses many workers into a single entry. `nuxt-run` is 1:1: one script
-directory → one standalone `.mjs`.
+<p align="center">
+  <a href="https://getminds.ai/" target="_blank" rel="noreferrer">
+    <img src="https://getminds.ai/images/logo.png" alt="Minds" height="72" />
+  </a>
+</p>
 
-- [Release Notes](./changelog.md)
-- [Documentation](https://aidanhibbard.github.io/nuxt-run/)
+<p align="center">
+  <a href="https://getminds.ai/">Minds</a>
+</p>
 
-## How it works
+---
 
-1. Drop a script at `server/run/<name>/index.{ts,js,mjs}`.
-2. Run `nuxt build`.
-3. The module hooks into Nitro's own Rollup pipeline (via `nitro:config`) and
-   emits each script as a chunk at `.output/server/run/<name>/index.mjs`.
-4. Run it directly: `node .output/server/run/<name>/index.mjs`.
+Runnable scripts in any environment.
 
-No `defineRun`, no CLI, no runtime helpers — just your script, bundled by the
-same Rollup that builds the rest of your Nitro server.
+Useful when you need to:
 
-## Quick setup
+- Run service code against an environment without pulling secrets down
+- Avoid HTTP endpoints just to trigger server code
+- Skip a queue when a one-shot or cron script is enough
+
+## Getting started
 
 ```bash
-npx nuxt module add nuxt-run
-```
-
-Add a script:
-
-```
-server/
-  run/
-    hello/
-      index.ts
+npm install -D nuxt-run
 ```
 
 ```ts
-// server/run/hello/index.ts
-console.log('Hello from nuxt-run')
-```
-
-Build and run:
-
-```bash
-nuxt build
-node .output/server/run/hello/index.mjs
-# -> Hello from nuxt-run
-```
-
-## Module options
-
-Configure via the `run` key in `nuxt.config.ts`:
-
-```ts
+// nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['nuxt-run'],
   run: {
-    // Directory containing run scripts, relative to project root.
     runDir: 'server/run',
-    // Glob pattern relative to runDir used to find entry files.
     runPattern: '**/index.{ts,js,mjs}',
   },
 })
 ```
 
-The script name is the directory immediately containing the `index` file, so
-`server/run/hello/index.ts` → `hello`. Duplicate names fail the build.
+Add a script under `server/run/<name>/index.ts`:
 
-## Output
+```ts
+// server/run/seed/index.ts
+const config = useRuntimeConfig()
+const seed = async () => {
+  orm
+    .connect(config.dbUrl)
+    .seed()
+  // insert rows, sync data, etc.
+}
 
-Scripts are emitted into Nitro's output directory — no separate `.output`
-config, and no generated wrapper. The file at
-`.output/server/run/<name>/index.mjs` (or `.nuxt/dev/run/<name>/index.mjs` in
-dev) **is** your script, bundled. If you need signal handlers or custom exit
-behaviour, put that in the script or wrap the `node` invocation yourself.
-Imports are bundled by Nitro (TypeScript transformation and npm externals
-handled for you).
+await seed()
+```
+
+Build, then run the emitted entry:
+
+```bash
+nuxt build
+node .output/server/run/seed/index.mjs
+```
+
+In dev:
+
+```bash
+nuxt dev
+node .nuxt/dev/run/seed/index.mjs
+```
+
+Scripts share Nitro's module graph, so `useRuntimeConfig()` and `server/utils` work.
+
+More detail: [Getting started](./docs/getting-started.md).
 
 ## Contribution
 

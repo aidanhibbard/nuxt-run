@@ -26,15 +26,16 @@ export async function scanRunScripts({
 
   for (const file of files) {
     const rel = relative(runDir, file)
-    const segments = rel.split(sep)
+    const segments = rel.split(sep).filter(Boolean)
     // The script name is the directory immediately containing the index file.
     // e.g. server/run/hello/index.ts -> "hello"
     //      server/run/foo/bar/index.ts -> "bar"
-    const name = segments.length >= 2 ? segments[segments.length - 2] : segments[0]
+    //      server/run/index.ts -> "index.ts"
+    const name = segments.length >= 2
+      ? segments[segments.length - 2]!
+      : segments[0]!
 
-    if (name) {
-      scripts.push({ name, srcPath: file })
-    }
+    scripts.push({ name, srcPath: file })
   }
 
   if (scripts.length === 0) {

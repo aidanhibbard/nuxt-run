@@ -12,7 +12,14 @@ one standalone `.mjs`.
 ## Install
 
 ```bash
-npx nuxt module add nuxt-run
+npm install -D nuxt-run
+```
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['nuxt-run'],
+})
 ```
 
 ## Add a run script
@@ -82,6 +89,23 @@ externals are handled for you.
 There is no `defineRun`, no CLI, no generated wrapper, and no process lifecycle
 handling. If you need signal handlers or custom exit behaviour, put that in the
 script (or wrap the `node` invocation yourself).
+
+## Accessing Nitro / Nuxt server APIs
+
+Run scripts are emitted through Nitro's Rollup pipeline, so they share the same
+module graph as the server:
+
+| Surface | Works? | Notes |
+| --- | --- | --- |
+| `useRuntimeConfig()` (auto-import) | Yes | Build-time `runtimeConfig` values are available |
+| `import { useRuntimeConfig } from 'nitropack/runtime'` | Yes | Same as auto-import |
+| `NUXT_*` / `NUXT_PUBLIC_*` env overrides | Yes | Applied at runtime by Nitro's config layer |
+| `server/utils/*` (shared utils) | Yes | Import relatively or via `~/server/utils/...` — bundled into the script |
+
+Importing Nitro runtime does **not** start the HTTP server. The module isolates
+Nitro's listen-bearing entry (`node-server` / `nitro-dev`) from the shared
+runtime chunk so scripts can use `useRuntimeConfig` safely alongside the web
+app in the same deployment.
 
 ## Dev mode
 

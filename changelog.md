@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Force `inlineDynamicImports: false` so Nitro's dev preset does not merge
   script chunks into the server entry (which would run top-level side effects
   on startup).
+- Isolate Nitro's listen-bearing server entry (`node-server` / `nitro-dev`)
+  from the shared `nitro` runtime chunk so scripts can import
+  `useRuntimeConfig` without starting a second HTTP server.
 
 ### Added
 
@@ -29,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `addWatchFile` for run scripts so changes are picked up in dev.
 - `nitro.ignore` for the configured `runDir` so scripts are never scanned as
   Nitro routes/handlers.
+- Unit tests with 100% coverage thresholds on `src/utils`, plus playground
+  smoke tests that assert scripts run and do not call `server.listen`.
+- CI jobs for lint, coverage, and build+smoke.
 - VitePress documentation site under `docs/`.
 - `configKey` (`run`) and `compatibility` fields to `package.json`.
 
