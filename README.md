@@ -50,12 +50,16 @@ Add a script under `server/run/<name>/index.ts`:
 
 ```ts
 // server/run/seed/index.ts
-const config = useRuntimeConfig()
+const {
+  db: {
+    url,
+  },
+} = useRuntimeConfig()
+
+const orm = new MyOrm(url)
+
 const seed = async () => {
-  orm
-    .connect(config.dbUrl)
-    .seed()
-  // insert rows, sync data, etc.
+  orm.insert(...)
 }
 
 await seed()
