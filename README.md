@@ -57,14 +57,13 @@ const {
 const orm = new MyOrm(url)
 
 const seed = async () => {
-  orm.insert(...)
+  await orm.insert(...)
 }
 
-try {
-  await seed()
-} catch (e) {
+seed().catch((e) => {
   console.error(e)
-}
+  process.exit(1)
+})
 ```
 
 In dev:

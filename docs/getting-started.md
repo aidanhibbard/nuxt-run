@@ -51,6 +51,24 @@ export function greet(name: string): string {
 }
 ```
 
+For async work, wrap in a function and use `.catch`. Avoid top-level `await`
+(Nitro's default transform target does not support it):
+
+```ts
+// server/run/seed/index.ts
+const { database: { url } } = useRuntimeConfig()
+
+const seed = async () => {
+  // connect, insert, etc.
+  console.log('seeding', url)
+}
+
+seed().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})
+```
+
 ## Build and run
 
 ```bash

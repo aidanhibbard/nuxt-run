@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 1.2.0
+
+### Changed
+
+- README and docs seed examples use `seed().catch(...)` instead of top-level
+  `await`, which fails under Nitro's default esbuild target.
+
 ## 1.1.0
 
 ### Added
