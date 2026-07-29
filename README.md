@@ -62,7 +62,11 @@ const seed = async () => {
   orm.insert(...)
 }
 
-await seed()
+try {
+  await seed()
+} catch (e) {
+  console.error(e)
+}
 ```
 
 Build, then run the emitted entry:
