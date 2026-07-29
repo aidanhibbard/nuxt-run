@@ -31,4 +31,10 @@ jobs:
         run: npm run prepack
 
       - name: Publish
-        run: npm publish --access public --provenance
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "nuxt-run@${VERSION}" version >/dev/null 2>&1; then
+            echo "nuxt-run@${VERSION} already on npm, skipping publish"
+            exit 0
+          fi
+          npm publish --access public --provenance
