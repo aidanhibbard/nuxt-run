@@ -38,6 +38,7 @@ npm install -D nuxt-run
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['nuxt-run'],
+  // Optional config
   run: {
     runDir: 'server/run',
     runPattern: '**/index.{ts,js,mjs}',
