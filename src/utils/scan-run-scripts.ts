@@ -1,4 +1,5 @@
 import fg from 'fast-glob'
+import { relative, sep } from 'node:path'
 import { logger } from './logger'
 
 export interface ScanRunScriptsOptions {
@@ -24,13 +25,14 @@ export async function scanRunScripts({
   const scripts: RunScript[] = []
 
   for (const file of files) {
-    // Extract the script name from the directory structure
-    // e.g., server/run/hello/index.ts -> hello
-    const relative = file.replace(runDir + '/', '')
-    const parts = relative.split('/')
-    const name = parts[0]
+    const rel = relative(runDir, file)
+    const segments = rel.split(sep)
+    // The script name is the directory immediately containing the index file.
+    // e.g. server/run/hello/index.ts -> "hello"
+    //      server/run/foo/bar/index.ts -> "bar"
+    const name = segments.length >= 2 ? segments[segments.length - 2] : segments[0]
 
-    if (name && !scripts.some(s => s.name === name)) {
+    if (name) {
       scripts.push({ name, srcPath: file })
     }
   }

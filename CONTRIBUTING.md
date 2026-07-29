@@ -1,36 +1,22 @@
-# Contributing to nuxt-processor
+# Contributing to nuxt-run
 
-Thank you for your interest in contributing! This document explains how to get
-involved. By participating, you agree to abide by our
-[Code of Conduct](./CODE_OF_CONDUCT.md).
-
-## Where GitHub looks for these files
-
-GitHub’s [community profile](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/about-community-profiles-for-public-repositories)
-checks the **repository root** for:
-
-| File | Purpose |
-| --- | --- |
-| `CONTRIBUTING.md` | How to contribute (this file) |
-| `CODE_OF_CONDUCT.md` | Community standards |
-
-Optional but recommended in `.github/`: issue templates, pull request template,
-and `SECURITY.md` for security reports.
+Thank you for your interest in contributing! By participating, you agree to
+abide by our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## Ways to contribute
 
-- **Bug reports** — open an issue with reproduction steps, Nuxt version, and Redis setup.
+- **Bug reports** — open an issue with reproduction steps and your Nuxt version.
 - **Feature requests** — open an issue describing the use case before large PRs.
 - **Documentation** — fixes and clarifications in `README.md`, `docs/`, and `changelog.md`.
 - **Code** — bug fixes, tests, and features via pull request.
 
 ## Development setup
 
-Requirements: **Node.js 24.x** (see `.nvmrc`), **npm**, and **Redis** for manual playground testing.
+Requirements: **Node.js** (see `.nvmrc`) and **npm**.
 
 ```bash
-git clone https://github.com/aidanhibbard/nuxt-processor.git
-cd nuxt-processor
+git clone https://github.com/aidanhibbard/nuxt-run.git
+cd nuxt-run
 npm install
 npm run dev:prepare
 ```
@@ -43,12 +29,10 @@ npm run dev
 
 # Production build of the playground
 npm run dev:build
-```
 
-Workers run in a separate process (see README). From the playground directory after `npm run dev`:
-
-```bash
-npm run processor:dev
+# Run a built script directly
+node playground/.output/server/run/hello/index.mjs
+node playground/.output/server/run/greet/index.mjs
 ```
 
 ### Quality checks
@@ -56,16 +40,9 @@ npm run processor:dev
 Run these before opening a PR:
 
 ```bash
-npm run lint          # ESLint
-npm run typecheck     # Nuxt / TypeScript
-npm run test          # Vitest
-npm run ci            # lint + typecheck + test
-```
-
-Optional (requires Docker):
-
-```bash
-npm run test:docker   # runtime NUXT_REDIS_* smoke tests
+npm run lint
+npm run test
+npm run test:types
 ```
 
 ### Docs site
@@ -79,10 +56,10 @@ npm run vp:build
 
 1. Fork the repo and create a branch from `main`.
 2. Make focused changes; avoid unrelated drive-by edits.
-3. Add or update tests in `spec/` when changing runtime behaviour.
+3. Add or update tests in `test/` when changing behaviour.
 4. Update `docs/` or `README.md` when behaviour or public API changes.
-5. Ensure `npm run ci` passes.
-6. Open a PR against `main` and fill out the [PR template](.github/pull_request_template.md).
+5. Ensure lint and tests pass.
+6. Open a PR against `main`.
 
 Breaking changes should be called out in the PR description and documented in
 `changelog.md` under an `## Unreleased` or upcoming version section.
@@ -91,29 +68,26 @@ Breaking changes should be called out in the PR description and documented in
 
 | Path | Description |
 | --- | --- |
-| `src/module.ts` | Nuxt module entry |
-| `src/runtime/` | `defineQueue`, `defineWorker`, `useProcessor` |
-| `src/utils/` | Build-time helpers (workers entry, Redis config) |
-| `playground/` | Development app |
+| `src/module.ts` | Nuxt module entry — hooks Nitro Rollup |
+| `src/utils/` | Build-time helpers (scan, validate names, logger) |
+| `playground/` | Development app with sample run scripts |
 | `docs/` | VitePress documentation |
-| `spec/` | Vitest unit tests |
-| `scripts/` | Docker smoke and release helpers |
+| `test/` | Vitest unit tests |
 
 ## Commit messages
 
-Use clear, imperative subject lines (e.g. `fix: resolve Redis port from NUXT_*`).
-Conventional prefixes (`feat:`, `fix:`, `docs:`, `chore:`) are welcome but not
-required.
+Use clear, imperative subject lines (e.g. `fix: resolve script name from nested dirs`).
+Conventional prefixes (`feat:`, `fix:`, `docs:`, `chore:`) are welcome but not required.
 
 ## Releases
 
 Maintainers handle releases. **Contributors do not need to publish to npm.**
 
 - Stable: version bump + `npm publish` (see maintainer docs).
-- Beta: `npm publish --tag beta` — install with `nuxt-processor@beta`.
+- Beta: `npm publish --tag beta` — install with `nuxt-run@beta`.
 
 ## Questions
 
-Open a [GitHub Discussion](https://github.com/aidanhibbard/nuxt-processor/discussions)
+Open a [GitHub Discussion](https://github.com/aidanhibbard/nuxt-run/discussions)
 or issue if Discussions are not enabled. For conduct concerns, see
 [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).

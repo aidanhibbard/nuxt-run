@@ -6,11 +6,8 @@ export default defineBuildConfig({
     'es-errors/type',
     'rollup',
     'nitropack',
-    '@rollup/plugin-node-resolve',
-    '@rollup/plugin-commonjs',
     'fast-glob',
     'consola',
-    'defu',
     '@nuxt/kit',
   ],
 })

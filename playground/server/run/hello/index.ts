@@ -1,3 +1,3 @@
-import { greet } from '../hello/utils'
+import { greet } from './utils'
 
 console.log(greet('World'))

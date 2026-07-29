@@ -1,84 +1,117 @@
-<!--
-Get your module up and running quickly.
-
-Find and replace all on all files (CMD+SHIFT+F):
-- Name: My Module
-- Package name: my-module
-- Description: My new Nuxt module
--->
-
-# My Module
+# nuxt-run
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-My new Nuxt module for doing amazing things.
+A Nuxt module that bundles standalone **run scripts** under `server/run/` into
+self-contained `.mjs` entries during the Nuxt/Nitro build. Each script becomes
+its own executable file you can run independently after `nuxt build` — one
+runnable, one entry.
 
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
-<!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
-<!-- - [📖 &nbsp;Documentation](https://example.com) -->
+This is the simpler sibling of [nuxt-processor](https://github.com/aidanhibbard/nuxt-processor),
+which collapses many workers into a single entry. `nuxt-run` is 1:1: one script
+directory → one standalone `.mjs`.
 
-## Features
+- [Release Notes](./changelog.md)
+- [Documentation](https://aidanhibbard.github.io/nuxt-run/)
 
-<!-- Highlight some of the features your module provide here -->
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
+## How it works
 
-## Quick Setup
+1. Drop a script at `server/run/<name>/index.{ts,js,mjs}`.
+2. Run `nuxt build`.
+3. The module hooks into Nitro's own Rollup pipeline (via `nitro:config`) and
+   emits each script as a chunk at `.output/server/run/<name>/index.mjs`.
+4. Run it directly: `node .output/server/run/<name>/index.mjs`.
 
-Install the module to your Nuxt application with one command:
+No `defineRun`, no CLI, no runtime helpers — just your script, bundled by the
+same Rollup that builds the rest of your Nitro server.
+
+## Quick setup
 
 ```bash
-npx nuxt module add my-module
+npx nuxt module add nuxt-run
 ```
 
-That's it! You can now use My Module in your Nuxt app ✨
+Add a script:
 
+```
+server/
+  run/
+    hello/
+      index.ts
+```
+
+```ts
+// server/run/hello/index.ts
+console.log('Hello from nuxt-run')
+```
+
+Build and run:
+
+```bash
+nuxt build
+node .output/server/run/hello/index.mjs
+# -> Hello from nuxt-run
+```
+
+## Module options
+
+Configure via the `run` key in `nuxt.config.ts`:
+
+```ts
+export default defineNuxtConfig({
+  modules: ['nuxt-run'],
+  run: {
+    // Directory containing run scripts, relative to project root.
+    runDir: 'server/run',
+    // Glob pattern relative to runDir used to find entry files.
+    runPattern: '**/index.{ts,js,mjs}',
+  },
+})
+```
+
+The script name is the directory immediately containing the `index` file, so
+`server/run/hello/index.ts` → `hello`. Duplicate names fail the build.
+
+## Output
+
+Scripts are emitted into Nitro's output directory — no separate `.output`
+config, and no generated wrapper. The file at
+`.output/server/run/<name>/index.mjs` (or `.nuxt/dev/run/<name>/index.mjs` in
+dev) **is** your script, bundled. If you need signal handlers or custom exit
+behaviour, put that in the script or wrap the `node` invocation yourself.
+Imports are bundled by Nitro (TypeScript transformation and npm externals
+handled for you).
 
 ## Contribution
 
 <details>
   <summary>Local development</summary>
-  
+
   ```bash
-  # Install dependencies
   npm install
-  
-  # Generate type stubs
-  npm run dev:prepare
-  
-  # Develop with the playground
-  npm run dev
-  
-  # Build the playground
-  npm run dev:build
-  
-  # Run ESLint
+  npm run dev:prepare   # generate type stubs
+  npm run dev            # develop with the playground
+  npm run dev:build      # production build of the playground
   npm run lint
-  
-  # Run Vitest
   npm run test
-  npm run test:watch
-  
-  # Release new version
+  npm run vp:dev         # VitePress docs site
   npm run release
   ```
 
 </details>
 
-
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/my-module/latest.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-version-href]: https://npmjs.com/package/my-module
+[npm-version-src]: https://img.shields.io/npm/v/nuxt-run/latest.svg?style=flat&colorA=020420&colorB=00DC82
+[npm-version-href]: https://npmjs.com/package/nuxt-run
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npm.chart.dev/my-module
+[npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-run.svg?style=flat&colorA=020420&colorB=00DC82
+[npm-downloads-href]: https://npm.chart.dev/nuxt-run
 
-[license-src]: https://img.shields.io/npm/l/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[license-href]: https://npmjs.com/package/my-module
+[license-src]: https://img.shields.io/npm/l/nuxt-run.svg?style=flat&colorA=020420&colorB=00DC82
+[license-href]: https://npmjs.com/package/nuxt-run
 
 [nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt
 [nuxt-href]: https://nuxt.com
