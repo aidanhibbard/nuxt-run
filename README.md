@@ -26,6 +26,7 @@ Useful when you need to:
 - Run service code against an environment without pulling secrets down
 - Avoid HTTP endpoints just to trigger server code
 - Skip a queue when a one-shot or cron script is enough
+  - Looking for Queues? Checkout [nuxt-processor](https://github.com/aidanhibbard/nuxt-processor)
 
 ## Getting started
 
