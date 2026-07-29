@@ -2,12 +2,19 @@
   "name": "nuxt-run",
   "version": "1.0.0",
   "description": "Bundle server run scripts into standalone mjs entries during the Nuxt/Nitro build",
-  "repository": "aidanhibbard/nuxt-run",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aidanhibbard/nuxt-run.git"
+  },
   "license": "MIT",
   "type": "module",
   "configKey": "run",
   "compatibility": {
     "nuxt": "^4.0.0 || ^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "exports": {
     ".": {
@@ -35,7 +42,7 @@
     "dev": "npm run dev:prepare && nuxt dev playground",
     "dev:build": "nuxt build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground",
-    "release": "npm run lint && npm run test:coverage && npm run test:smoke && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
+    "release": "npm run lint && npm run test:coverage && npm run test:smoke && npm run prepack && changelogen --release && git push --follow-tags",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
